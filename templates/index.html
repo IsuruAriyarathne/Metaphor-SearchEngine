@@ -1,0 +1,113 @@
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<!--<link href="main.css" rel="stylesheet">-->
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+<script>
+	function MyFunction(aggregate){
+		keyword = aggregate.name;
+		console.log("keyword: "+keyword);
+		songs_array = document.getElementsByClassName('search-result row');
+		songs_array = Array.from(songs_array);
+		matching_songs = songs_array.filter(keyword_filter,keyword);
+		len_matching = matching_songs.length;
+		len_original = songs_array.length;
+		section = document.getElementById('song_section');
+		section.innerHTML = matching_songs.map(e => e.outerHTML).join()
+		console.log(section);
+		header = document.getElementById('results');
+		header.innerHTML = `<h2 class="lead" id="results"><strong class="text-danger">${len_matching}</strong> results out of ${len_original} matches the criteria</h2>`;
+
+		var tags_ul = document.getElementById("tags");
+		var tags_li = document.createElement("li");
+		tags_li.setAttribute("style","display:inline-block; padding:15px; margin:10px; border: 2px solid blue; border-radius: 5px;");
+		tags_li.appendChild(document.createTextNode(keyword));
+		tags_ul.appendChild(tags_li);
+	}
+
+	function keyword_filter(element){
+		keyword = this;
+		content = element.innerText;
+		return content.includes(keyword)
+	}
+
+</script>
+
+<div class="container">
+	<div class="container">
+		<div class="col-md-4 fixed-center">
+			<div class="d-flex h-100 align-items-center justify-content-center pt-4 ">
+				<form action="http://127.0.0.1:3000/" method="post" class="form-inline w-100 d-flex justify-content-center align-items-center pt-3">
+					<div class="d-flex justify-content-center row">
+						<input class="form-control m-5 border border-info" size="50" type="search" aria-label="Search" type="text" name="searchTerm"  placeholder="Enter the keywords for your search">
+					</div>
+					<div class="d-flex justify-content-center row">
+						<select class="form-select m-5 border border-info" style="width:285px; height: 35px;" aria-label="Default select example" name="typequeery">
+							<option selected value="anywhere">Anywhere</option>
+							<option value="title_only">Title Only</option>
+							<option value="metaphors_only">Metaphors Only</option>
+							<option value="lyricist_only">Lyricist Only</option>
+						</select>
+					</div>
+					<div class="d-flex justify-content-center row">
+						<button class="btn btn-info pl-5 pr-5 m-5" type="submit">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="col-md-8">
+			{% if hits %}
+			<hgroup class="mb20 pt-5 pl-4">
+				<h1 class="pt-3 text-info">Search Results</h1>
+				<h2 class="lead" id="results"><strong class="text-info">{{ num_results }}</strong> results were found for the search for <strong class="text-info">{{  query  }}</strong></h2>
+			</hgroup>
+			<!-- <h4><span>Tags: </span><ul id="tags" style="display: inline-block"></ul></h4> -->
+
+			<section id='song_section' class="col-md-8">
+				{% for hit in hits %}
+				<article class="search-result row">
+					<div class="col-md-12">
+						<div class="card mb-3 border border-info">
+							<h4 class="card-header text-info"><a href="#" class="link-info">{{ hit._source.sinhala_name }}</a></h4>
+							<div class="card-body h-100">
+								<ul class="meta-search">
+									<li> <span> Composer: {{ hit._source.sinhala_composer }} </span></li>
+									<li> <span> Singer: {{ hit._source.sinhala_singer }}</span></li>
+									<li> <span> Lyricist: {{ hit._source.sinhala_lyricist }}</span></li>
+								</ul>
+								<div class="w-100">
+									<p style="white-space: pre-line">{{ hit._source.lyrics }}</p>
+								</div>
+								
+								<span class="clearfix borda"></span>
+								<h5 class="text-info"> Metaphors </a></h5>
+								<ul class="meta-search">
+									<li> <span> Metaphor 01: {{ hit._source.sinhala_metaphor }} </span></li>
+									<li> <span> Meaning: {{ hit._source.sinhala_source }} -> {{ hit._source.sinhala_target }}</span></li>
+									<li> <span> Metaphor 01: {{ hit._source.sinhala_interpretation }} </span></li>
+								</ul>
+							</div>
+						</div>
+						
+					</div>
+
+				</article>
+				{% endfor %}
+			</section>
+			{% else %}
+			<div class="d-flex h-100 align-items-center justify-content-center pt-4">
+				<hgroup class="mb20">
+					<h1 class="text-info">Search Results</h1>
+					<h2 class="lead"><strong class="text-danger">0</strong> results were found for the search for <strong class="text-danger">{{  query  }}</strong></h2>
+				</hgroup>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
